@@ -11,9 +11,12 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  flutter_secure_storage: ^4.0.0
+  flutter_secure_storage: ^4.2.0
   http: ^0.13.3
   cupertino_icons: ^1.0.2
+  video_player: ^2.8.0
+  cached_network_image: ^3.0.0
+  image_picker: ^0.8.5+3 # Use the latest version available
 
 dev_dependencies:
   flutter_test:
@@ -22,3 +25,5 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/default-avatar.png

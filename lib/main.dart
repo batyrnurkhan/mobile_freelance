@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import './register_page.dart'; // Adjust the import path as needed
 import './login_page.dart';   // Adjust the import path as needed
 import './profile_page.dart'; // Adjust the import path as needed
-
+import './in_progress_listing_page.dart';
 void main() {
   runApp(MyApp());
 }
@@ -15,11 +15,12 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: LoginPage(), // Starting page of the app
+      home: LoginPage(),
       routes: {
         '/login': (context) => LoginPage(),
         '/register': (context) => RegisterPage(),
         '/profile': (context) => ProfilePage(),
+        '/in_progress': (context) => InProgressListingsPage(), // Add the new route here
       },
     );
   }
