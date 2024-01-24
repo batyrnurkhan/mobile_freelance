@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'filter_dialog.dart'; // Import the new FilterDialog class
+import 'filter_dialog.dart';
 import 'listing_detail_page.dart';
 import 'create_listing_page.dart';
 
@@ -105,108 +105,114 @@ class _HomePageState extends State<HomePage> {
   }
 
   @override
-Widget build(BuildContext context) {
-  return Scaffold(
-    appBar: AppBar(
-      title: _buildSearchBar(),
-      backgroundColor: Colors.deepPurple,
-      elevation: 4.0,
-      actions: <Widget>[
-        IconButton(
-          icon: Icon(Icons.filter_list),
-          onPressed: _showFilterDialog,
-        ),
-        if (userRole == 'client')
-          IconButton(
-            icon: Icon(Icons.add),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => CreateListingPage()),
-              );
-            },
-          ),
-      ],
-    ),
-    body: Padding(
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: _buildSearchBar(),
+        backgroundColor: Colors.deepPurple,
+        elevation: 4.0,
+        actions: _buildAppBarActions(),
+      ),
+      body: _buildBody(),
+    );
+  }
+
+  List<Widget> _buildAppBarActions() {
+    List<Widget> actions = [
+      IconButton(
+        icon: Icon(Icons.filter_list),
+        onPressed: _showFilterDialog,
+      ),
+    ];
+    if (userRole == 'client') {
+      actions.add(IconButton(
+        icon: Icon(Icons.add),
+        onPressed: () {
+          Navigator.push(context, MaterialPageRoute(builder: (context) => CreateListingPage()));
+        },
+      ));
+    }
+    return actions;
+  }
+
+  Widget _buildBody() {
+    return Padding(
       padding: const EdgeInsets.all(10.0),
       child: FutureBuilder<List<Map<String, dynamic>>>(
         future: fetchOpenListings(),
         builder: _buildListView,
       ),
-    ),
-  );
-}
+    );
+  }
 
+  Widget _buildListView(BuildContext context, AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
+    if (snapshot.connectionState == ConnectionState.waiting) {
+      return Center(child: CircularProgressIndicator());
+    } else if (snapshot.hasError) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('Error: ${snapshot.error}'),
+            ElevatedButton(
+              child: Text('Retry'),
+              onPressed: () => setState(() {}),
+            ),
+          ],
+        ),
+      );
+    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+      return Center(child: Text('No listings found.'));
+    } else {
+      return ListView.separated(
+        itemCount: snapshot.data!.length,
+        separatorBuilder: (context, index) => Divider(color: Colors.grey),
+        itemBuilder: (context, index) {
+          Map<String, dynamic> listing = snapshot.data![index];
+          return Card(
+            elevation: 2.0,
+            margin: EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+            child: ListTile(
+              leading: CircleAvatar(
+                backgroundColor: Colors.deepPurple,
+                child: Icon(Icons.list_alt, color: Colors.white),
+              ),
+              title: Text(
+                listing['title'],
+                style: TextStyle(fontWeight: FontWeight.bold, color: Colors.deepPurple),
+              ),
+              subtitle: Text(
+                listing['description'],
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ListingDetailPage(slug: listing['slug'])),
+                );
+              },
+            ),
+          );
+        },
+      );
+    }
+  }
 
-Widget _buildListView(BuildContext context, AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
-if (snapshot.connectionState == ConnectionState.waiting) {
-return Center(child: CircularProgressIndicator());
-} else if (snapshot.hasError) {
-return Center(
-child: Column(
-mainAxisAlignment: MainAxisAlignment.center,
-children: [
-Text('Error: ${snapshot.error}'),
-ElevatedButton(
-child: Text('Retry'),
-onPressed: () => setState(() {}),
-),
-],
-),
-);
-} else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-return Center(child: Text('No listings found.'));
-} else {
-return ListView.separated(
-itemCount: snapshot.data!.length,
-separatorBuilder: (context, index) => Divider(color: Colors.grey),
-itemBuilder: (context, index) {
-Map<String, dynamic> listing = snapshot.data![index];
-return Card(
-elevation: 2.0,
-margin: EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
-child: ListTile(
-leading: CircleAvatar(
-backgroundColor: Colors.deepPurple,
-child: Icon(Icons.list_alt, color: Colors.white),
-),
-title: Text(
-listing['title'],
-style: TextStyle(fontWeight: FontWeight.bold, color: Colors.deepPurple),
-),
-subtitle: Text(
-listing['description'],
-maxLines: 2,
-overflow: TextOverflow.ellipsis,
-),
-onTap: () {
-Navigator.push(
-context,
-MaterialPageRoute(builder: (context) => ListingDetailPage(slug: listing['slug'])),
-);
-},
-),
-);
-},
-);
-}
-}
-
-Widget _buildSearchBar() {
-return TextField(
-controller: _searchController,
-decoration: InputDecoration(
-hintText: 'Search listings...',
-hintStyle: TextStyle(color: Colors.white),
-border: InputBorder.none,
-),
-style: TextStyle(color: Colors.white),
-onSubmitted: (value) {
-if (this.mounted) {
-setState(() {});
-}
-},
-);
-}
+  Widget _buildSearchBar() {
+    return TextField(
+      controller: _searchController,
+      decoration: InputDecoration(
+        hintText: 'Search listings...',
+        hintStyle: TextStyle(color: Colors.white),
+        border: InputBorder.none,
+      ),
+      style: TextStyle(color: Colors.white),
+      onSubmitted: (value) {
+        if (this.mounted) {
+          setState(() {});
+        }
+      },
+    );
+  }
 }

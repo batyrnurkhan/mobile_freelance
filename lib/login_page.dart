@@ -32,15 +32,14 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _handleSuccessfulLogin(http.Response response) async {
-  final responseData = json.decode(response.body);
-  await _storage.write(key: 'token', value: responseData['access']);
-  await _storage.write(key: 'userId', value: responseData['user_id'].toString());
-  await _storage.write(key: 'role', value: responseData['role']);
-  await _storage.write(key: 'username', value: _username);  // Store the username
+    final responseData = json.decode(response.body);
+    await _storage.write(key: 'token', value: responseData['access']);
+    await _storage.write(key: 'userId', value: responseData['user_id'].toString());
+    await _storage.write(key: 'role', value: responseData['role']);
+    await _storage.write(key: 'username', value: _username);
 
-  Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => MainScreen()));
-}
-
+    Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => MainScreen()));
+  }
 
   void _showInvalidCredentialsMessage() {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Invalid Credentials')));
@@ -50,51 +49,52 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text('Login')),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: _buildLoginForm(),
+      body: _buildBody(),
+    );
+  }
+
+  Widget _buildBody() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(16.0),
+      child: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            _buildTextField('Username', false),
+            const SizedBox(height: 20),
+            _buildTextField('Password', true),
+            const SizedBox(height: 20),
+            _buildLoginButton(),
+            const SizedBox(height: 20),
+            _buildRegisterButton(),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildLoginForm() {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: <Widget>[
-        _buildTextField('Username', false, (val) => _username = val),
-        const SizedBox(height: 20),
-        _buildTextField('Password', true, (val) => _password = val),
-        const SizedBox(height: 20),
-        _buildLoginButton(),
-        const SizedBox(height: 20),
-        _buildRegisterButton(),
-      ],
-    );
-  }
-
-
-  Widget _buildTextField(String label, bool isPassword, ValueChanged<String> onChanged) {
+  Widget _buildTextField(String label, bool isPassword) {
     return TextFormField(
       decoration: InputDecoration(
         labelText: label,
         border: OutlineInputBorder(),
         labelStyle: TextStyle(fontWeight: FontWeight.bold),
       ),
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Please enter $label';
-        }
-        if (isPassword && value.length < 8) {
-          return 'Password must be at least 8 characters long';
-        }
-        return null;
-      },
+      validator: (value) => _validateTextField(value, label, isPassword),
       obscureText: isPassword,
-      onChanged: onChanged,
+      onChanged: (val) => isPassword ? _password = val : _username = val,
     );
+  }
+
+  String? _validateTextField(String? value, String label, bool isPassword) {
+    if (value == null || value.isEmpty) {
+      return 'Please enter $label';
+    }
+    if (isPassword && value.length < 8) {
+      return 'Password must be at least 8 characters long';
+    }
+    return null;
   }
 
   Widget _buildLoginButton() {
