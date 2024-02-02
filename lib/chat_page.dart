@@ -47,7 +47,6 @@ class _ChatPageState extends State<ChatPage> {
           IconButton(
             icon: Icon(Icons.search),
             onPressed: () {
-              // Implement search functionality
             },
           ),
         ],

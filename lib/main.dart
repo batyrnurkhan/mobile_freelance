@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import './register_page.dart'; // Adjust the import path as needed
-import './login_page.dart';   // Adjust the import path as needed
-import './profile_page.dart'; // Adjust the import path as needed
+import './register_page.dart';
+import './login_page.dart';
+import './profile_page.dart';
 import './in_progress_listing_page.dart';
 void main() {
   runApp(MyApp());
@@ -20,7 +20,7 @@ class MyApp extends StatelessWidget {
         '/login': (context) => LoginPage(),
         '/register': (context) => RegisterPage(),
         '/profile': (context) => ProfilePage(),
-        '/in_progress': (context) => InProgressListingsPage(), // Add the new route here
+        '/in_progress': (context) => InProgressListingsPage(), 
       },
     );
   }

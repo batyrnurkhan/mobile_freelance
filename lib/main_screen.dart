@@ -13,7 +13,7 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
-  String userRole = 'client'; // Default role, will be updated based on actual user role
+  String userRole = 'client'; // Default role
   final storage = FlutterSecureStorage();
 
   @override

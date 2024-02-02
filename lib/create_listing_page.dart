@@ -15,7 +15,7 @@ class _CreateListingPageState extends State<CreateListingPage> {
   String description = '';
   double price = 0.0;
   List<String> selectedSkills = [];
-  List<String> allSkills = []; // Placeholder for all available skills
+  List<String> allSkills = [];
 
   @override
   void initState() {
@@ -24,9 +24,6 @@ class _CreateListingPageState extends State<CreateListingPage> {
   }
 
   Future<void> _fetchSkills() async {
-    // Fetch skills from your backend
-    // Example: http.get(url)
-    // Update the 'allSkills' list with the fetched skills
   }
 
   Future<void> _submitListing() async {
@@ -97,7 +94,6 @@ class _CreateListingPageState extends State<CreateListingPage> {
                   return null;
                 },
               ),
-              // Skill selection widget (e.g., dropdown, checkboxes)
               ...allSkills.map((skill) => CheckboxListTile(
                 title: Text(skill),
                 value: selectedSkills.contains(skill),

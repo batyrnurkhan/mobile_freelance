@@ -88,8 +88,7 @@ var updateData = {
 'email': email,
 'first_name': firstName,
 'last_name': lastName,
-// Do not jsonEncode here for skill_ids, it should be a List<int>
-'skill_ids': selectedSkillIds.toList(), // Send the list of IDs directly
+'skill_ids': selectedSkillIds.toList(),
 if (!isClient) ...{
 'portfolio': portfolio,
 if (introductionVideoUrl.isNotEmpty) 'introduction_video': introductionVideoUrl,} else ...{
@@ -99,11 +98,11 @@ if (introductionVideoUrl.isNotEmpty) 'introduction_video': introductionVideoUrl,
   if (profileVideoUrl.isNotEmpty) 'profile_video': profileVideoUrl,
 },};
 
-// Now, only encode the entire updateData object once, before sending it
+
 var response = await http.put(
 uri,
 headers: headers,
-body: jsonEncode(updateData), // Encode the entire updateData map to a JSON string
+body: jsonEncode(updateData),
 );
 
 if (response.statusCode == 200) {

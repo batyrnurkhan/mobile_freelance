@@ -167,7 +167,6 @@ class _ProfilePageState extends State<ProfilePage> {
   Widget imageWidget;
 
   if (profileImageUrl != null && profileImageUrl.isNotEmpty) {
-    // Construct the full URL for the profile image
     String fullImageUrl = 'http://10.0.2.2:8000' + profileImageUrl;
 
     // Use CachedNetworkImageProvider to load the image
@@ -176,12 +175,11 @@ class _ProfilePageState extends State<ProfilePage> {
       backgroundImage: CachedNetworkImageProvider(fullImageUrl),
       backgroundColor: Colors.transparent,
       onBackgroundImageError: (exception, stackTrace) {
-        // Handle any errors here
+        // Handle any errors
         print('Error loading profile image: $exception');
       },
     );
   } else {
-    // Fallback to a default image if the URL is empty or null
     imageWidget = CircleAvatar(
       radius: 40,
       backgroundImage: AssetImage('assets/default-avatar.png'),

@@ -48,7 +48,7 @@ class _HomePageState extends State<HomePage> {
         throw Exception('Failed to load skills');
       }
     } catch (e) {
-      // Handle errors here
+      // Handle errors
     }
   }
 
@@ -59,7 +59,7 @@ class _HomePageState extends State<HomePage> {
         userRole = role ?? '';
       });
     } catch (e) {
-      // Handle errors here
+      // Handle errors
     }
   }
 
