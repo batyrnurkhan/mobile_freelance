@@ -118,22 +118,23 @@ class _HomePageState extends State<HomePage> {
   }
 
   List<Widget> _buildAppBarActions() {
-    List<Widget> actions = [
-      IconButton(
-        icon: Icon(Icons.filter_list),
-        onPressed: _showFilterDialog,
-      ),
-    ];
-    if (userRole == 'client') {
-      actions.add(IconButton(
-        icon: Icon(Icons.add),
-        onPressed: () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => CreateListingPage()));
-        },
-      ));
-    }
-    return actions;
+  List<Widget> actions = [
+    IconButton(
+      icon: Icon(Icons.filter_list, color: Colors.white), // Set color to white
+      onPressed: _showFilterDialog,
+    ),
+  ];
+  if (userRole == 'client') {
+    actions.add(IconButton(
+      icon: Icon(Icons.add, color: Colors.white), // Set color to white for consistency
+      onPressed: () {
+        Navigator.push(context, MaterialPageRoute(builder: (context) => CreateListingPage()));
+      },
+    ));
   }
+  return actions;
+}
+
 
   Widget _buildBody() {
     return Padding(

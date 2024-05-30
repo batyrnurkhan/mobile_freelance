@@ -34,6 +34,23 @@ class _ChatPageState extends State<ChatPage> {
     }
   }
 
+  Future<void> deleteChat(int chatId) async {
+    String? token = await storage.read(key: 'token');
+    final response = await http.delete(
+      Uri.parse('http://10.0.2.2:8000/api/chats/$chatId/'),
+      headers: {'Authorization': 'Bearer $token'},
+    );
+    if (response.statusCode == 204) {
+      // Successfully deleted chat
+      setState(() {
+        chats.removeWhere((chat) => chat['id'] == chatId);
+      });
+    } else {
+      // Handle error
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to delete chat')));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -46,8 +63,7 @@ class _ChatPageState extends State<ChatPage> {
         actions: [
           IconButton(
             icon: Icon(Icons.search),
-            onPressed: () {
-            },
+            onPressed: () {},
           ),
         ],
       ),
@@ -56,6 +72,7 @@ class _ChatPageState extends State<ChatPage> {
               itemCount: chats.length,
               itemBuilder: (context, index) {
                 final chat = chats[index];
+                final chatId = chat['id'];
                 final participantUsernames = chat['participant_usernames'] ?? [];
                 final initialLetters = participantUsernames.isNotEmpty ? participantUsernames.map((name) => name.isNotEmpty ? name[0] : '?').join() : '?';
                 return Card(
@@ -77,7 +94,10 @@ class _ChatPageState extends State<ChatPage> {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    trailing: Icon(Icons.chevron_right),
+                    trailing: IconButton(
+                      icon: Icon(Icons.delete, color: Colors.red),
+                      onPressed: () => deleteChat(chatId),
+                    ),
                     onTap: () {
                       Navigator.push(
                         context,
