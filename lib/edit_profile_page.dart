@@ -77,41 +77,52 @@ class _EditProfilePageState extends State<EditProfilePage> {
     }
   }
 
-  Future<void> updateProfile() async {
+Future<void> updateProfile() async {
   String? token = await storage.read(key: 'token');
   final uri = Uri.parse('http://10.0.2.2:8000/api/accounts/profile/update/');
-final headers = {
-'Content-Type': 'application/json',
-'Authorization': 'Bearer $token',
-};
-var updateData = {
-'email': email,
-'first_name': firstName,
-'last_name': lastName,
-'skill_ids': selectedSkillIds.toList(),
-if (!isClient) ...{
-'portfolio': portfolio,
-if (introductionVideoUrl.isNotEmpty) 'introduction_video': introductionVideoUrl,} else ...{
-  'company_website': companyWebsite,
-  'company_name': companyName,
-  'preferred_communication': preferredCommunication,
-  if (profileVideoUrl.isNotEmpty) 'profile_video': profileVideoUrl,
-},};
+  final headers = {
+    'Authorization': 'Bearer $token',
+    // Removed 'Content-Type': 'application/json', to allow multipart
+  };
 
+  var request = http.MultipartRequest('PUT', uri)
+    ..headers.addAll(headers)
+    ..fields['email'] = email
+    ..fields['first_name'] = firstName
+    ..fields['last_name'] = lastName;
 
-var response = await http.put(
-uri,
-headers: headers,
-body: jsonEncode(updateData),
-);
+  // Append each skill ID as a separate entry
+  selectedSkillIds.forEach((id) {
+    request.fields['skill_ids[]'] = id.toString();
+  });
 
-if (response.statusCode == 200) {
-ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Profile updated successfully')));
-} else {
-ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to update profile: ${response.body}')));
+  if (!isClient) {
+    request.fields['portfolio'] = portfolio;
+    if (introductionVideoUrl.isNotEmpty) {
+      request.fields['introduction_video'] = introductionVideoUrl;
+    }
+  } else {
+    request.fields['company_website'] = companyWebsite;
+    request.fields['company_name'] = companyName;
+    request.fields['preferred_communication'] = preferredCommunication;
+    if (profileVideoUrl.isNotEmpty) {
+      request.fields['profile_video'] = profileVideoUrl;
+    }
+  }
+
+  if (_profileImage != null) {
+    request.files.add(await http.MultipartFile.fromPath('profile_image', _profileImage!.path));
+  }
+
+  var response = await request.send();
+  if (response.statusCode == 200) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Profile updated successfully')));
+  } else {
+    response.stream.transform(utf8.decoder).listen((value) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to update profile: $value')));
+    });
+  }
 }
-}
-
 
   List<String> getSkillNamesFromIds(Set<int> ids) {
     return availableSkills.where((skill) => ids.contains(skill.id)).map((skill) => skill.name).toList();

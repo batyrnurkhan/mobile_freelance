@@ -3,9 +3,11 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'edit_listing_page.dart';
+import 'review_page.dart';  // Ensure this page is correctly implemented
 
 class ListingDetailPage extends StatefulWidget {
   final String slug;
+
   ListingDetailPage({required this.slug});
 
   @override
@@ -29,7 +31,6 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
   Future<void> fetchUserDetails() async {
     String? role = await storage.read(key: 'role');
     String? user = await storage.read(key: 'username');
-    print("User role: $role, Username: $user");
     setState(() {
       userRole = role;
       username = user;
@@ -45,7 +46,6 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
-      print("Listing details: $data");
       setState(() {
         listingDetails = data;
         isLoading = false;
@@ -64,17 +64,33 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
     );
   }
 
-  void takeOrder() async {
-    String? token = await storage.read(key: 'token');
-    final response = await http.post(
-      Uri.parse('http://10.0.2.2:8000/api/listings/${widget.slug}/take/'),
-      headers: {'Authorization': 'Bearer $token'},
+  void showErrorSnackbar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+        duration: Duration(seconds: 3),
+      )
     );
+  }
 
-    if (response.statusCode == 200) {
-      // Order taken successfully
+  void navigateToReviewPage() {
+    print("Navigating to Review Page with listingDetails: $listingDetails");
+    if (listingDetails == null || !listingDetails!.containsKey('freelancer') || listingDetails!['freelancer'] == null) {
+      showErrorSnackbar("Freelancer details are unavailable.");
+      return;
+    }
+
+    var freelancer = listingDetails!['freelancer'];
+    if (freelancer is String) {
+      print("Freelancer username: $freelancer");
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => ReviewPage(freelancerUsername: freelancer)),
+      );
     } else {
-      // Failed to take the order
+      showErrorSnackbar("Freelancer data is not a valid string.");
+      print("Freelancer data type is incorrect: ${freelancer.runtimeType}");
     }
   }
 
@@ -85,7 +101,7 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
     }
 
     bool isOwner = listingDetails?['user'] == username;
-    print("Is owner: $isOwner");
+    bool canReview = userRole == 'client' && (listingDetails?['status'] == 'in_progress' || listingDetails?['status'] == 'closed');
 
     return Scaffold(
       appBar: AppBar(
@@ -100,15 +116,19 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
         ],
       ),
       body: buildListingDetails(),
-      floatingActionButton: shouldShowTakeOrderButton() && !isOwner ? FloatingActionButton(
-        onPressed: takeOrder,
-        child: Icon(Icons.assignment_turned_in),
-        backgroundColor: Colors.green,
+      floatingActionButton: canReview ? FloatingActionButton(
+        onPressed: navigateToReviewPage,
+        child: Icon(Icons.rate_review),
+        backgroundColor: Colors.purple,
       ) : null,
     );
   }
 
   Widget buildListingDetails() {
+    if (listingDetails == null) {
+      return Text('No data available');
+    }
+
     final String baseUrl = 'http://10.0.2.2:8000';
     return SingleChildScrollView(
       child: Padding(
@@ -134,7 +154,7 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
                 buildDetailRow('Status', listingDetails!['status']),
                 buildDetailRow('Client', listingDetails!['user']),
                 buildDetailRow('Freelancer', listingDetails!['freelancer'] ?? 'N/A'),
-                buildSkillsSection(listingDetails!['skills']),
+                buildSkillsSection(listingDetails!['skills'] ?? []),
                 buildDetailRow('Created At', listingDetails!['created_at']),
                 buildDetailRow('Taken At', listingDetails!['taken_at'] ?? 'N/A'),
                 buildDetailRow('Ended At', listingDetails!['ended_at'] ?? 'N/A'),
@@ -177,11 +197,5 @@ class _ListingDetailPageState extends State<ListingDetailPage> {
       ),
     );
   }
-
-  bool shouldShowTakeOrderButton() {
-    final status = listingDetails?['status'];
-    final isListingOpenOrInRequest = status == 'open' || status == 'in_request';
-    final isFreelancerNotSet = listingDetails?['freelancer'] == null;
-    return userRole == 'freelancer' && isListingOpenOrInRequest && isFreelancerNotSet;
-  }
 }
+``
